@@ -1,12 +1,11 @@
-import express from 'express';
-
 import BasicStrategy from 'passport-http';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import User from '../models/user.model';
 import { JWT_SECRET } from '../config';
+import User from '../models/user.model';
+
 
 // COMMENT: STRATEGIES
-const basicStrategy = new BasicStrategy((username, password, callback) => {
+export const basicStrategy = new BasicStrategy((username, password, callback) => {
   let user;
   User.findOne({ username })
     .then(_user => {
@@ -36,7 +35,7 @@ const basicStrategy = new BasicStrategy((username, password, callback) => {
     });
 });
 
-const jwtStrategy = new JwtStrategy(
+export const jwtStrategy = new JwtStrategy(
   {
     secretOrKey: JWT_SECRET,
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken('Bearer'),
@@ -46,36 +45,3 @@ const jwtStrategy = new JwtStrategy(
     done(null, payload.user);
   }
 );
-
-// COMMENT: AUTH ROUTE
-const auth = express.Router();
-auth.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  User.findOne({ username })
-    .exec()
-    .then(user => {
-      if (!user) {
-        return Promise.reject({
-          code: 409,
-          reason: 'Wrong username',
-          message: 'Username already taken',
-          location: 'username'
-        });
-      }
-      if (!user.validatePassword(password)) {
-        return Promise.reject({
-          code: 409,
-          reason: 'ValidationError',
-          message: 'Wrong password',
-          location: 'username'
-        });
-      }
-
-      return res.status(200).json(user.userChipRepr());
-    })
-    .catch(() => {
-      res.status(500).json({ code: 500, message: 'Internal server error' });
-    });
-});
-
-export default auth;

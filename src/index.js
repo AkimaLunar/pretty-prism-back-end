@@ -7,14 +7,16 @@ import express from 'express';
 import mongoose from 'mongoose';
 import socket from 'socket.io';
 import cors from 'cors';
+import passport from 'passport';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 
 import polishApi from './api/polish';
 import userApi from './api/user';
-import auth from './lib/auth';
 import messageApi from './api/message';
 import commentApi from './api/comment';
+import auth from './api/auth';
+import { basicStrategy, jwtStrategy } from './lib/authStrategies';
 
 const app = express();
 const io = socket(http);
@@ -24,6 +26,10 @@ app.use(morgan('dev'));
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+app.use(passport.initialize());
+passport.use(basicStrategy);
+passport.use(jwtStrategy);
 
 app.use('/polish', polishApi);
 app.use('/user', userApi);
