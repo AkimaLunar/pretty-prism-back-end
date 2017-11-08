@@ -1,6 +1,4 @@
-import dotenv from 'dotenv';
-dotenv.config();
-import { DATABASE_URL, PORT } from './config';
+import _env from './env'; // eslint-disable-line
 
 import http from 'http';
 import express from 'express';
@@ -17,6 +15,7 @@ import messageApi from './api/message';
 import commentApi from './api/comment';
 import auth from './api/auth';
 import { basicStrategy, jwtStrategy } from './lib/authStrategies';
+import { DATABASE_URL, PORT } from './config';
 
 const app = express();
 const io = socket(http);

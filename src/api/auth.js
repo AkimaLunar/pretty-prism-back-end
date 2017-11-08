@@ -1,7 +1,6 @@
 import express from 'express';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model';
 
 import { JWT_SECRET, JWT_EXPIRY } from '../config';
 
@@ -12,15 +11,25 @@ const createAuthToken = user =>
     algorithm: 'HS256'
   });
 
-// COMMENT: AUTH ROUTE
+// COMMENT: LOGIN
 const auth = express.Router();
 auth.post(
   '/login',
   passport.authenticate('basic', { session: false }),
   (req, res) => {
-    const authToken = createAuthToken(req.user.apiRepr());
+    const authToken = createAuthToken(req.user.userChipRepr());
     res.json({ authToken });
   }
+);
+
+// COMMENT: TEST ENDPOINT
+auth.get(
+  '/test',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) =>
+    res.json({
+      data: 'You have a secret access code'
+    })
 );
 
 export default auth;
