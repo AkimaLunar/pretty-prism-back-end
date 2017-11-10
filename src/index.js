@@ -7,12 +7,13 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
-import passport from 'passport';
-// TODO: Needs refactoring for GraphQL
-// import { basicStrategy, jwtStrategy } from './lib/authStrategies';
+
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import schema from './schema';
 import connectMongo from './db';
+
+import passport from 'passport';
+import { authenticate } from './authentication';
 
 // Express App
 const app = express();
@@ -22,21 +23,20 @@ app.use(morgan('dev'));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(passport.initialize());
-// passport.use(basicStrategy);
-// passport.use(jwtStrategy);
 
 // Server
 const start = async () => {
   const mongo = await connectMongo();
+  const buildOptions = async req => {
+    const user = await authenticate(req, mongo.Users);
+    return {
+      context: { mongo, user },
+      schema
+    };
+  };
 
   // GraphQL
-  app.use(
-    '/graphql',
-    graphqlExpress({
-      context: { mongo },
-      schema
-    })
-  );
+  app.use('/graphql', graphqlExpress(buildOptions));
 
   // Graphiql
   app.use(

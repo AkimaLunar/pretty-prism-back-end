@@ -2,6 +2,28 @@ import { makeExecutableSchema } from 'graphql-tools';
 import resolvers from './resolvers';
 
 const typeDefs = `
+
+type Query {
+  allPolishes: [Polish!]!
+  allUsers: [User!]!
+}
+
+type Mutation {
+  createPolish(
+    images: [String],
+    name: String!
+  ): Polish
+
+  createUser(
+    username: String!,
+    password: String!
+  ): User
+
+  login(
+    username: String!,
+    password: String
+  ): LoginPayload
+}
   type Polish {
     id: ID!
     images: [String],
@@ -11,24 +33,15 @@ const typeDefs = `
     status: String
   }
 
-  type Query {
-    allPolishes: [Polish!]!
-  }
-
-  type Mutation {
-    createPolish(
-      images: [String],
-      name: String!
-    ): Polish
-  }
-
   type User {
     id: ID!,
     username: String!,
     password: String!,
-    avatar: String!,
-    polishes: [Polish],
-    squad: [User],
+    avatar: String!
+  }
+
+  type LoginPayload {
+    token: String!
   }
 
   type Comment {
