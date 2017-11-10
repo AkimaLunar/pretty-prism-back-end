@@ -1,7 +1,8 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET, JWT_EXPIRY } from '../config';
+import { assertValidUser } from './assertions';
 
 const hashPassword = password => bcrypt.hash(password, 10);
 const validatePassword = (input, password) => bcrypt.compare(input, password);
@@ -22,9 +23,11 @@ export default {
   },
 
   Mutation: {
-    createPolish: async (root, data, { mongo: { Polishes } }) => {
-      const response = await Polishes.insert(data);
-      return Object.assign({ id: response.insertedIds[0] }, data);
+    createPolish: async (root, data, { mongo: { Polishes }, user }) => {
+      assertValidUser(user);
+      const newPolish = Object.assign({ ownersIds: [user && user._id] }, data);
+      const response = await Polishes.insert(newPolish);
+      return Object.assign({ id: response.insertedIds[0] }, newPolish);
     },
 
     createUser: async (root, data, { mongo: { Users } }) => {
@@ -40,24 +43,22 @@ export default {
 
     login: async (root, data, { mongo: { Users } }) => {
       const user = await Users.findOne({ username: data.username });
-      console.log(`User: ${JSON.stringify(user, '', 2)}`);
       const _validPassword = await validatePassword(
         data.password,
         user.password
       );
-      console.log(`Valid password: ${_validPassword}`);
       if (_validPassword) {
-        const _token = await generateToken(user);
-        console.log(`Token: ${_token}`);
         return {
-          token: _token
+          token: generateToken(user)
         };
       }
     }
   },
 
   Polish: {
-    id: root => root._id || root.id
+    id: root => root._id || root.id,
+    owners: async ({ ownersIds }, data, { mongo: { Users } }) =>
+      await ownersIds.map(id => Users.findOne({ _id: new ObjectId(id) }))
   },
   User: {
     id: root => root._id || root.id

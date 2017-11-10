@@ -28,6 +28,7 @@ type Mutation {
     id: ID!
     images: [String],
     name: String!,
+    owners: [User]!
     brand: String,
     location: String,
     status: String
