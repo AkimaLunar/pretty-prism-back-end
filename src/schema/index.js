@@ -6,6 +6,9 @@ const typeDefs = `
 type Query {
   allPolishes: [Polish!]!
   allUsers: [User!]!
+  polish(id: String!): Polish
+  messages(receiverId: String!): [Message]!
+  chat(receiverId: String!, senderId: String!): [Message]!
 }
 
 type Mutation {
@@ -23,15 +26,26 @@ type Mutation {
     username: String!,
     password: String
   ): LoginPayload
+
+  createComment(
+    polishId: String!,
+    text: String!
+  ): Comment
+
+  createMessage(
+    receiver: String!,
+    text: String!
+  ): Message
 }
   type Polish {
-    id: ID!
-    images: [String],
+    id: ID!,
+    images: [String]!,
     name: String!,
-    owners: [User]!
+    owners: [User!]!
     brand: String,
     location: String,
-    status: String
+    status: String,
+    comments: [Comment]!
   }
 
   type User {

@@ -13,6 +13,8 @@ import schema from './schema';
 import connectMongo from './db';
 import { authenticate } from './authentication';
 
+import { logger } from './lib/logger';
+
 // Express App
 const app = express();
 
@@ -26,7 +28,7 @@ const start = async () => {
   const mongo = await connectMongo();
   const buildOptions = async req => {
     const user = await authenticate(req, mongo.Users);
-    console.log(JSON.stringify(user, '', 2));
+    logger(`Logged in user: ${user.username}`);
     return {
       context: { mongo, user },
       schema
@@ -39,16 +41,13 @@ const start = async () => {
   app.use(
     '/test',
     graphiqlExpress({
-      endpointURL: '/graphql'
+      endpointURL: '/graphql',
+      passHeader:
+        '"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjVhMDVkMWIyNDg0MzAxMGZlMmVlMTM4YiIsInVzZXJuYW1lIjoidGlnZXIiLCJwYXNzd29yZCI6IiQyYSQxMCRRWVFrZXgudVVsTFBIVnFKSUVYMjJPSW4wOVFuLnk1VEJ5bXJvaHo2ZTV3WlVvU3FyYlp6VyIsImF2YXRhciI6Imh0dHBzOi8vcHJldHR5LXByaXNtLm55YzMuZGlnaXRhbG9jZWFuc3BhY2VzLmNvbS9hc3NldHMvZGVmYXVsdF9hdmF0YXIucG5nIn0sImlhdCI6MTUxMDMzMDg1OSwiZXhwIjoxNTEwOTM1NjU5LCJzdWIiOiJ0aWdlciJ9.RaUpwf5-4bgy5TnW73eQqfZ09stJre4X-EoQlCPmyvA"'
     })
-    // graphiqlExpress({
-    //   endpointURL: '/graphql',
-    //   passHeader:
-    //     '"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjVhMDVkMWIyNDg0MzAxMGZlMmVlMTM4YiIsInVzZXJuYW1lIjoidGlnZXIiLCJwYXNzd29yZCI6IiQyYSQxMCRRWVFrZXgudVVsTFBIVnFKSUVYMjJPSW4wOVFuLnk1VEJ5bXJvaHo2ZTV3WlVvU3FyYlp6VyIsImF2YXRhciI6Imh0dHBzOi8vcHJldHR5LXByaXNtLm55YzMuZGlnaXRhbG9jZWFuc3BhY2VzLmNvbS9hc3NldHMvZGVmYXVsdF9hdmF0YXIucG5nIn0sImlhdCI6MTUxMDMzMDg1OSwiZXhwIjoxNTEwOTM1NjU5LCJzdWIiOiJ0aWdlciJ9.RaUpwf5-4bgy5TnW73eQqfZ09stJre4X-EoQlCPmyvA"'
-    // })
   );
   app.listen(PORT, () => {
-    console.log(`All systems ready on port ${PORT}`);
+    logger(`All systems ready on port ${PORT}`);
   });
 };
 

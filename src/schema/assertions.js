@@ -20,3 +20,12 @@ export const assertValidPolishInput = data => {
     throw new ValidationError('Link validation error: invalid url.', 'url');
   }
 };
+
+export const assertValidPolishId = async (id, Polishes) => {
+  try {
+    const _polish = await Polishes.find({ _id: id }, { _id: 1 }).limit(1);
+    if (!_polish) throw new Error();
+  } catch (error) {
+    throw new Error('Wrong polish ID');
+  }
+};
