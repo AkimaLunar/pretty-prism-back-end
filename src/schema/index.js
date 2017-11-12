@@ -17,10 +17,31 @@ type Mutation {
     name: String!
   ): Polish
 
+  updatePolish(
+    id: String!,
+    images: [String],
+    name: String,
+    brand: String,
+    status: String
+  ): Polish
+
+  deletePolish(
+    id: String!
+  ): DeletePolishPayload
+
   createUser(
     username: String!,
     password: String!
   ): User
+
+  updateUser(
+    username: String,
+    avatar: String
+  ) : User
+
+  deleteUser(
+    id: ID
+  ) : DeleteUserPayload
 
   login(
     username: String!,
@@ -32,48 +53,68 @@ type Mutation {
     text: String!
   ): Comment
 
+  deleteComment(
+    id: ID
+  ) : DeleteUserPayload
+
+
   createMessage(
     receiver: String!,
     text: String!
   ): Message
 }
-  type Polish {
-    id: ID!,
-    images: [String]!,
-    name: String!,
-    owners: [User!]!
-    brand: String,
-    location: String,
-    status: String,
-    comments: [Comment]!
-  }
+type Polish {
+  id: ID!,
+  images: [String]!,
+  name: String!,
+  owners: [User!]!
+  brand: String,
+  status: Status,
+  comments: [Comment]!
+}
 
-  type User {
-    id: ID!,
-    username: String!,
-    password: String!,
-    avatar: String!
-  }
+enum Status {
+  IDLE
+  REQUESTED
+  TRANSFER
+}
 
-  type LoginPayload {
-    token: String!
-  }
+type DeletePolishPayload {
+  id: ID
+}
+type DeleteUserPayload {
+  id: ID
+}
+type DeleteCommentPayload {
+  id: ID
+}
 
-  type Comment {
-    id: ID!,
-    polish: Polish!,
-    author: User!,
-    timestamp: String!,
-    text: String!
-  }
-  
-  type Message {
-    id: ID!,
-    sender: User!,
-    receiver: User!,
-    timestamp: String!,
-    text: String!
-  }
+type User {
+  id: ID!,
+  username: String!,
+  password: String!,
+  avatar: String!
+}
+
+type LoginPayload {
+  token: String!
+}
+
+type Comment {
+  id: ID!,
+  polish: Polish!,
+  author: User!,
+  timestamp: String!,
+  text: String!
+}
+
+type Message {
+  id: ID!,
+  sender: User!,
+  receiver: User!,
+  timestamp: String!,
+  text: String!
+}
 
 `;
 

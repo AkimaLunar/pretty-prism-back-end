@@ -2,7 +2,12 @@ import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET, JWT_EXPIRY } from '../config';
-import { assertValidUser, assertValidPolishId } from './assertions';
+import {
+  assertValidUser,
+  assertValidPolishId,
+  assertValidOwner,
+  assertValidAuthor
+} from './assertions';
 import { logger } from '../lib/logger';
 
 const hashPassword = password => bcrypt.hash(password, 10);
@@ -16,6 +21,8 @@ const generateToken = user =>
   });
 
 export default {
+  // COMMENT: QUERIES
+
   Query: {
     allPolishes: async (root, data, { mongo: { Polishes } }) =>
       await Polishes.find({}).toArray(),
@@ -44,12 +51,37 @@ export default {
       }).toArray()
   },
 
+  // COMMENT: MUTATIONS
+
   Mutation: {
     createPolish: async (root, data, { mongo: { Polishes }, user }) => {
       assertValidUser(user);
-      const newPolish = Object.assign({ ownersIds: [user && user._id] }, data);
+      const newPolish = Object.assign(
+        {
+          ownersIds: [user && user._id],
+          status: 'IDLE'
+        },
+        data
+      );
       const response = await Polishes.insert(newPolish);
       return Object.assign({ id: response.insertedIds[0] }, newPolish);
+    },
+
+    updatePolish: async (root, data, { mongo: { Polishes }, user }) => {
+      const { id, ...payload } = data;
+      await assertValidOwner(user, id, Polishes);
+      const response = await Polishes.findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        { $set: { ...payload } }
+      );
+      return Object.assign({}, response.value, payload);
+    },
+
+    deletePolish: async (root, data, { mongo: { Polishes }, user }) => {
+      const { id } = data;
+      await assertValidOwner(user, id, Polishes);
+      await Polishes.deleteOne({ _id: new ObjectId(id) });
+      return { id };
     },
 
     createUser: async (root, data, { mongo: { Users } }) => {
@@ -62,6 +94,25 @@ export default {
       const response = await Users.insert(newUser);
       return Object.assign({ id: response.insertedIds[0] }, newUser);
     },
+
+    updateUser: async (root, data, { mongo: { Users }, user }) => {
+      assertValidUser(user);
+      const { _id } = user;
+      const response = await Users.findOneAndUpdate(
+        { _id: new ObjectId(_id) },
+        { $set: { ...data } }
+      );
+      return Object.assign({}, response.value, data);
+    },
+
+    deleteUser: async (root, data, { mongo: { Users }, user }) => {
+      await assertValidUser(user);
+      const { _id } = user;
+      await Users.deleteOne({ _id: new ObjectId(_id) });
+      return { _id };
+    },
+
+    // TODO: Update password
 
     login: async (root, data, { mongo: { Users } }) => {
       const user = await Users.findOne({ username: data.username });
@@ -89,6 +140,13 @@ export default {
       });
       const response = await Comments.insert(newComment);
       return Object.assign({ id: response.insertedIds[0] }, newComment);
+    },
+
+    deleteComment: async (root, data, { mongo: { Comments }, user }) => {
+      const { id } = data;
+      await assertValidAuthor(user, id, Comments);
+      await Comments.deleteOne({ _id: new ObjectId(id) });
+      return Object.assign({ id });
     },
 
     createMessage: async (root, data, { mongo: { Messages }, user }) => {
