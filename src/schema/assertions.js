@@ -1,12 +1,12 @@
 import { ObjectId } from 'mongodb';
 import { logger } from '../lib/logger';
 
-class ValidationError extends Error {
-  constructor(message, field) {
-    super(message);
-    this.field = field;
-  }
-}
+// class ValidationError extends Error {
+//   constructor(message, field) {
+//     super(message);
+//     this.field = field;
+//   }
+// }
 
 export const assertValidUser = user => {
   try {
@@ -48,13 +48,13 @@ export const assertValidAuthor = async (user, id, Comments) => {
   }
 };
 
-export const assertValidPolishInput = data => {
-  try {
-    if (!data) throw new Error('Access denied');
-  } catch (error) {
-    throw new ValidationError('Link validation error: invalid url.', 'url');
-  }
-};
+// export const assertValidPolishInput = data => {
+//   try {
+//     if (!data) throw new Error('Access denied');
+//   } catch (error) {
+//     throw new ValidationError('Link validation error: invalid url.', 'url');
+//   }
+// };
 
 export const assertValidPolishId = async (id, Polishes) => {
   try {
