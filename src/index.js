@@ -37,6 +37,10 @@ const start = async () => {
       schema
     };
   };
+
+  app.get('/', (req, res) => {
+    res.status(200).json({ message: 'PrettyPrism API' });
+  });
   // GraphQL
   app.use('/graphql', graphqlExpress(buildOptions));
 
