@@ -8,7 +8,7 @@ import {
   assertValidOwner,
   assertValidAuthor
 } from './assertions';
-import { logger } from '../lib/logger';
+// import { logger } from '../lib/logger';
 
 const hashPassword = password => bcrypt.hash(password, 10);
 const validatePassword = (input, password) => bcrypt.compare(input, password);
