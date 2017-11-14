@@ -1,0 +1,11 @@
+version: "3"
+services:
+  graphql:
+    build:
+      context: .
+      dockerfile: "Dockerfile"
+    command: npm start
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/pretty-prism

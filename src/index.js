@@ -1,81 +1,62 @@
 import _env from './env'; // eslint-disable-line
+import { PORT } from './config';
 
-import http from 'http';
+import 'babel-polyfill';
+
 import express from 'express';
-import mongoose from 'mongoose';
-import socket from 'socket.io';
 import cors from 'cors';
-import passport from 'passport';
-import morgan from 'morgan';
 import bodyParser from 'body-parser';
+import morgan from 'morgan';
 
-import polishApi from './api/polish';
-import userApi from './api/user';
-import messageApi from './api/message';
-import commentApi from './api/comment';
-import auth from './api/auth';
-import { basicStrategy, jwtStrategy } from './lib/authStrategies';
-import { DATABASE_URL, PORT } from './config';
+import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
+import schema from './schema';
+import connectMongo from './db';
+import { authenticate } from './authentication';
 
+import { logger } from './lib/logger';
+
+// Express App
 const app = express();
-const io = socket(http);
-// app.server = http.createServer(app);
-app.use(morgan('dev'));
 
 // Middleware
+app.use(morgan('dev'));
 app.use(cors());
 app.use(bodyParser.json());
 
-app.use(passport.initialize());
-passport.use(basicStrategy);
-passport.use(jwtStrategy);
-
-app.use('/polish', polishApi);
-app.use('/user', userApi);
-app.use('/auth', auth);
-app.use('/message', messageApi);
-app.use('/comment', commentApi);
-app.get('/', (req, res) => {
-  res.json({ hello: 'hello' });
-});
-
 // Server
-let server;
-const runServer = function(databaseUrl = DATABASE_URL, port = PORT) {
-  return new Promise((resolve, reject) => {
-    mongoose.connect(databaseUrl, err => {
-      if (err) {
-        return reject(err);
-      }
-      server = app
-        .listen(port, () => {
-          resolve();
-        })
-        .on('error', err => {
-          mongoose.disconnect();
-          reject(err);
-        });
-    });
+const start = async () => {
+  const mongo = await connectMongo();
+  const buildOptions = async req => {
+    const user = await authenticate(req, mongo.Users);
+    user
+      ? logger(`Logged in user: ${user.username}`)
+      : logger('Anonynous session');
+
+    return {
+      context: { mongo, user },
+      schema
+    };
+  };
+  // GraphQL
+  app.use('/graphql', graphqlExpress(buildOptions));
+
+  // Graphiql
+  app.use(
+    '/test',
+    // User
+    graphiqlExpress({
+      endpointURL: '/graphql',
+      passHeader:
+        '"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7Il9pZCI6IjVhMDVkMWIyNDg0MzAxMGZlMmVlMTM4YiIsInVzZXJuYW1lIjoidGlnZXJraXR0eSIsInBhc3N3b3JkIjoiJDJhJDEwJFFZUWtleC51VWxMUEhWcUpJRVgyMk9JbjA5UW4ueTVUQnltcm9oejZlNXdaVW9TcXJiWnpXIiwiYXZhdGFyIjoiaHR0cHM6Ly9wcmV0dHktcHJpc20ubnljMy5kaWdpdGFsb2NlYW5zcGFjZXMuY29tL2Fzc2V0cy9kZWZhdWx0X2F2YXRhci5wbmcifSwiaWF0IjoxNTEwNDY0NTcxLCJleHAiOjE1MTEwNjkzNzEsInN1YiI6InRpZ2Vya2l0dHkifQ.6XhUXRF1uVm8pTz9OuaCFf2dIMUxWlVhsLNH_Y-d8IM"'
+    })
+    // Anonymous
+    // graphiqlExpress({
+    //   endpointURL: '/graphql'
+    // })
+  );
+  app.listen(PORT, () => {
+    logger(`All systems ready on port ${PORT}`);
   });
 };
 
-const closeServer = function() {
-  return mongoose.disconnect().then(
-    () =>
-      new Promise((resolve, reject) => {
-        server.close(err => {
-          if (!err) {
-            resolve();
-          } else {
-            reject(err);
-          }
-        });
-      })
-  );
-};
-
-if (require.main === module) {
-  runServer().catch(err => console.log(err));
-}
-
-export { app, runServer, closeServer };
+start();

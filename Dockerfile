@@ -1,23 +1,26 @@
-FROM alpine:3.4
+# Use an official Ubuntu Xenial as a parent image
+FROM ubuntu:16.04
 
-# Update & install required packages
-RUN apk add --update nodejs bash git
+# Install Node.js 8 and npm 5
+RUN apt-get update
+RUN apt-get -qq upgrade
+RUN apt-get install -y build-essential
+RUN apt-get install -y curl
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash
+RUN apt-get install -y nodejs
 
 # Install app dependencies
-COPY package.json /www/package.json
-RUN cd /www; npm install
+COPY package.json /pretty-prism/package.json
+COPY package-lock.json /pretty-prism/package-lock.json
+RUN cd /pretty-prism; npm install
 
-# Copy app source
-COPY . /www
+# Set the working directory to /pretty-prism
+WORKDIR /pretty-prism
 
-# Set work directory to /www
-WORKDIR /www
+# Define environment variable
 
-# set your port
-ENV PORT 8080
+# Make port 8080 available to the world outside this container
+EXPOSE 8080
 
-# expose the port to outside world
-EXPOSE  8080
-
-# start command as per package.json
+# Run `npm start` when the container launches
 CMD ["npm", "start"]
