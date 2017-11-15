@@ -5,3 +5,11 @@ cache:
     - node_modules
 script:
   - npm test
+sudo: required
+before_install:
+  - apt-get -y install resync
+  - mkdir -p ~/.ssh
+  - (umask 077 ; echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa)
+after_success:
+  - npm run build
+  - rsync -avzP dist/ akimalunar@107.170.193.166:/var/www/api/

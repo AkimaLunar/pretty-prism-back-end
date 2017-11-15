@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { logger } from '../lib/logger';
 
+// TODO: Implement ValidationError
 // class ValidationError extends Error {
 //   constructor(message, field) {
 //     super(message);
