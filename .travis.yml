@@ -9,8 +9,8 @@ sudo: required
 before_install:
   - sudo apt-get -y install rsync
   - sudo mkdir -p ~/.ssh
-  - ssh-keyscan -H 107.170.193.166 >> ~/.ssh/known_hosts
   - sudo echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa
 after_success:
   - npm run build
-  - sudo rsync -avzP -y dist/ akimalunar@107.170.193.166:/var/www/api/
+  - ssh-keyscan -H 107.170.193.166 >> ~/.ssh/known_hosts
+  - sudo rsync -avzP -o StrictHostKeyChecking=no dist/ akimalunar@107.170.193.166:/var/www/api/
