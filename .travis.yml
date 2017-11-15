@@ -7,7 +7,7 @@ script:
   - npm test
 sudo: required
 before_install:
-  - apt-get -y install resync
+  - apt-get -y install rsync
   - mkdir -p ~/.ssh
   - (umask 077 ; echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa)
 after_success:
