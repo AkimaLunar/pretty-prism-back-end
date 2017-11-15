@@ -9,7 +9,7 @@ sudo: required
 before_install:
   - sudo apt-get -y install rsync
   - sudo mkdir -p ~/.ssh
-  - sudo (umask 077 ; echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa)
+  - sudo echo $SSH_KEY | base64 --decode > ~/.ssh/id_rsa
 after_success:
   - npm run build
   - sudo rsync -avzP dist/ akimalunar@107.170.193.166:/var/www/api/
