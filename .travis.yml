@@ -15,4 +15,4 @@ before_install:
   - cat ~/.ssh/id_rsa
 after_success:
   - npm run build
-  - sudo rsync -avzP dist/ akimalunar@107.170.193.166:/var/www/api/
+  - sudo rsync -avzP -y dist/ akimalunar@107.170.193.166:/var/www/api/
