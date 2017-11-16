@@ -3,6 +3,13 @@ node_js: node
 cache:
   directories:
     - node_modules
+addons:
+  ssh_known_hosts:
+  - api.prettyprism.com
+  - 107.170.193.166
+branches:
+  only:
+  - master
 script:
   - npm test
 sudo: required
@@ -13,5 +20,4 @@ before_install:
 after_success:
   - npm run build
   - ssh-keyscan -t ecdsa 107.170.193.166 >> ~/.ssh/known_hosts
-  - ssh-keyscan -t rsa 107.170.193.166 >> ~/.ssh/known_hosts
-  - sudo rsync -o StrictHostKeyChecking=no -avzP dist/ akimalunar@107.170.193.166:/var/www/api/
+  - sudo rsync -avzP dist/ akimalunar@107.170.193.166:/var/www/api/
