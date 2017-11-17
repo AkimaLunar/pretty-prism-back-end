@@ -46,7 +46,7 @@ const start = async () => {
 
   // Graphiql
   app.use(
-    '/test',
+    '/playground',
     graphiqlExpress({
       endpointURL: '/graphql'
     })

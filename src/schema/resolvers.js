@@ -8,7 +8,7 @@ import {
   assertValidOwner,
   assertValidAuthor
 } from './assertions';
-// import { logger } from '../lib/logger';
+import { logger } from '../lib/logger';
 
 const hashPassword = password => bcrypt.hash(password, 10);
 const validatePassword = (input, password) => bcrypt.compare(input, password);
@@ -32,6 +32,9 @@ export default {
 
     polish: async (root, data, { mongo: { Polishes } }) =>
       await Polishes.findOne({ _id: new ObjectId(data.id) }),
+
+    comments: async (root, data, { mongo: { Comments } }) =>
+      await Comments.find({ polishId: data.polishId }).toArray(),
 
     messages: async (root, data, { mongo: { Messages } }) =>
       await Messages.find({ receiver: data.receiverId }).toArray(),
@@ -165,7 +168,7 @@ export default {
     owners: async ({ ownersIds }, data, { mongo: { Users } }) =>
       await ownersIds.map(id => Users.findOne({ _id: new ObjectId(id) })),
     comments: async ({ _id }, data, { mongo: { Comments } }) =>
-      await Comments.find({ polishId: _id.toString }).toArray()
+      await Comments.find({ polishId: _id.toString() }).toArray()
   },
   User: {
     id: root => root._id || root.id

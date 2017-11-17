@@ -7,6 +7,7 @@ type Query {
   allPolishes: [Polish!]!
   allUsers: [User!]!
   polish(id: String!): Polish
+  comments(polishId: String!): [Comment]!
   messages(receiverId: String!): [Message]!
   chat(receiverId: String!, senderId: String!): [Message]!
 }
