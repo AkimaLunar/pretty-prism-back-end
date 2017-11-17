@@ -98,7 +98,10 @@ type User {
 }
 
 type LoginPayload {
-  token: String!
+  token: String!,
+  userId: String!,
+  username: String!,
+  avatar: String!
 }
 
 type Comment {

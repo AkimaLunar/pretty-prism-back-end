@@ -125,7 +125,10 @@ export default {
       );
       if (_validPassword) {
         return {
-          token: generateToken(user)
+          token: generateToken(user),
+          userId: user._id.toString(),
+          username: user.username,
+          avatar: user.avatar
         };
       }
     },
