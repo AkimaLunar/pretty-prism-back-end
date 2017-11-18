@@ -27,8 +27,11 @@ export default {
     allPolishes: async (root, data, { mongo: { Polishes } }) =>
       await Polishes.find({}).toArray(),
 
-    user: async (root, data, { mongo: { Users } }) =>
+    userById: async (root, data, { mongo: { Users } }) =>
       await Users.findOne({ _id: new ObjectId(data.id) }),
+
+    userByUsername: async (root, data, { mongo: { Users } }) =>
+      await Users.findOne({ username: data.username }),
 
     polish: async (root, data, { mongo: { Polishes } }) =>
       await Polishes.findOne({ _id: new ObjectId(data.id) }),
