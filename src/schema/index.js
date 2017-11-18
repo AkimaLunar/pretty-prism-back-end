@@ -5,7 +5,7 @@ const typeDefs = `
 
 type Query {
   allPolishes: [Polish!]!
-  allUsers: [User!]!
+  user(id: String!): User
   polish(id: String!): Polish
   comments(polishId: String!): [Comment]!
   messages(receiverId: String!): [Message]!

@@ -27,8 +27,8 @@ export default {
     allPolishes: async (root, data, { mongo: { Polishes } }) =>
       await Polishes.find({}).toArray(),
 
-    allUsers: async (root, data, { mongo: { Users } }) =>
-      await Users.find({}).toArray(),
+    user: async (root, data, { mongo: { Users } }) =>
+      await Users.findOne({ _id: new ObjectId(data.id) }),
 
     polish: async (root, data, { mongo: { Polishes } }) =>
       await Polishes.findOne({ _id: new ObjectId(data.id) }),
@@ -174,7 +174,8 @@ export default {
       await Comments.find({ polishId: _id.toString() }).toArray()
   },
   User: {
-    id: root => root._id || root.id
+    id: root => root._id || root.id,
+    password: () => ''
   },
   Comment: {
     id: root => root._id || root.id,
