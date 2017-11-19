@@ -34,7 +34,7 @@ type Mutation {
   createUser(
     username: String!,
     password: String!
-  ): User
+  ): LoginPayload
 
   updateUser(
     username: String,
@@ -100,7 +100,7 @@ type User {
 
 type LoginPayload {
   token: String!,
-  userId: String!,
+  id: String!,
   username: String!,
   avatar: String!
 }
