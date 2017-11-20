@@ -98,14 +98,14 @@ export default {
           'https://pretty-prism.nyc3.digitaloceanspaces.com/assets/default_avatar.png'
       });
       const response = await Users.insert(newUser);
-      const inserteduser = {
+      const insertedUser = {
         id: response.insertedIds[0],
         username: newUser.username,
         avatar: newUser.avatar
       };
       return {
-        token: generateToken(inserteduser),
-        ...inserteduser
+        token: generateToken(insertedUser),
+        ...insertedUser
       };
     },
 
@@ -129,17 +129,20 @@ export default {
     // TODO: Update password
 
     login: async (root, data, { mongo: { Users } }) => {
-      const user = await Users.findOne({ username: data.username });
+      const _user = await Users.findOne({ username: data.username });
       const _validPassword = await validatePassword(
         data.password,
-        user.password
+        _user.password
       );
       if (_validPassword) {
+        const user = {
+          id: _user._id,
+          username: _user.username,
+          avatar: _user.avatar
+        };
         return {
           token: generateToken(user),
-          id: user._id.toString(),
-          username: user.username,
-          avatar: user.avatar
+          ...user
         };
       }
     },
