@@ -6,7 +6,8 @@ import {
   JWT_SECRET,
   JWT_EXPIRY,
   ACCESS_KEY_ID,
-  SECRET_ACCESS_KEY
+  SECRET_ACCESS_KEY,
+  BUCKET
 } from '../config';
 import {
   assertValidUser,
@@ -96,12 +97,26 @@ export default {
       return { id };
     },
 
-    signS3: async (root, { filname, filetype }) => {
+    signS3: async (root, { filename, filetype }) => {
       const s3 = new AWS.S3({
         signatureVersion: 'v4',
-        accessKeyId,
-        secretAccessKey
+        accessKeyId: ACCESS_KEY_ID,
+        secretAccessKey: SECRET_ACCESS_KEY
       });
+      const s3Params = {
+        Bucket: BUCKET,
+        Key: filename,
+        Expires: 180,
+        ContentType: filetype,
+        ACL: 'public-read'
+      };
+      const signedRequest = await s3.getSignedUrl('putObject', s3Params);
+      const url = `https://${BUCKET}.digitaloceanspaces.com/${filename}`;
+
+      return {
+        signedRequest,
+        url
+      };
     },
 
     createUser: async (root, data, { mongo: { Users } }) => {
