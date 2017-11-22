@@ -19,6 +19,8 @@ type Mutation {
     name: String!
   ): Polish
 
+  signS3(filename: String!, filetype: String!): S3Payload!
+
   updatePolish(
     id: String!,
     images: [String],
@@ -81,13 +83,12 @@ enum Status {
   TRANSFER
 }
 
+type S3Payload {
+  signedRequest: String!,
+  url: String!,
+}
+
 type DeletePolishPayload {
-  id: ID
-}
-type DeleteUserPayload {
-  id: ID
-}
-type DeleteCommentPayload {
   id: ID
 }
 
@@ -96,6 +97,10 @@ type User {
   username: String!,
   password: String!,
   avatar: String!
+}
+
+type DeleteUserPayload {
+  id: ID
 }
 
 type LoginPayload {
@@ -111,6 +116,10 @@ type Comment {
   author: User!,
   timestamp: String!,
   text: String!
+}
+
+type DeleteCommentPayload {
+  id: ID
 }
 
 type Message {

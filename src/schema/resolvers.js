@@ -1,7 +1,13 @@
 import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET, JWT_EXPIRY } from '../config';
+import AWS from 'aws-sdk';
+import {
+  JWT_SECRET,
+  JWT_EXPIRY,
+  ACCESS_KEY_ID,
+  SECRET_ACCESS_KEY
+} from '../config';
 import {
   assertValidUser,
   assertValidPolishId,
@@ -88,6 +94,14 @@ export default {
       await assertValidOwner(user, id, Polishes);
       await Polishes.deleteOne({ _id: new ObjectId(id) });
       return { id };
+    },
+
+    signS3: async (root, { filname, filetype }) => {
+      const s3 = new AWS.S3({
+        signatureVersion: 'v4',
+        accessKeyId,
+        secretAccessKey
+      });
     },
 
     createUser: async (root, data, { mongo: { Users } }) => {
