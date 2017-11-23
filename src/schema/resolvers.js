@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import AWS from 'aws-sdk';
+import aws4 from 'aws4';
 import {
   JWT_SECRET,
   JWT_EXPIRY,
@@ -15,7 +16,7 @@ import {
   assertValidOwner,
   assertValidAuthor
 } from './assertions';
-// import { logger } from '../lib/logger';
+import { logger } from '../lib/logger';
 
 const hashPassword = password => bcrypt.hash(password, 10);
 const validatePassword = (input, password) => bcrypt.compare(input, password);
@@ -97,24 +98,21 @@ export default {
       return { id };
     },
 
-    signS3: async (root, { filename, filetype }) => {
-      const s3 = new AWS.S3({
-        signatureVersion: 'v4',
+    signS3: async (root, { image }) => {
+      const url = `https://${BUCKET}.digitaloceanspaces.com/${image.name}`;
+      const options = {
+        host: `https://${BUCKET}.digitaloceanspaces.com/`,
+        region: 'nyc3',
+        service: 's3',
+        path: image.name
+      };
+      const signature = await aws4.sign(options, {
         accessKeyId: ACCESS_KEY_ID,
         secretAccessKey: SECRET_ACCESS_KEY
       });
-      const s3Params = {
-        Bucket: BUCKET,
-        Key: filename,
-        Expires: 180,
-        ContentType: filetype,
-        ACL: 'public-read'
-      };
-      const signedRequest = await s3.getSignedUrl('putObject', s3Params);
-      const url = `https://${BUCKET}.digitaloceanspaces.com/${filename}`;
-
+      logger(JSON.stringify(signature, '', 2));
       return {
-        signedRequest,
+        signature,
         url
       };
     },

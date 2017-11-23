@@ -19,7 +19,7 @@ type Mutation {
     name: String!
   ): Polish
 
-  signS3(filename: String!, filetype: String!): S3Payload!
+  signS3(image: Image!): S3Payload!
 
   updatePolish(
     id: String!,
@@ -84,8 +84,14 @@ enum Status {
 }
 
 type S3Payload {
-  signedRequest: String!,
+  signature: String!,
   url: String!,
+}
+
+input Image {
+  name: String!,
+  type: String!,
+  size: String
 }
 
 type DeletePolishPayload {
