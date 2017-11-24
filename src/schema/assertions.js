@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb';
-import { logger } from '../lib/logger';
+import { logger } from '../utils/logger';
 
 // TODO: Implement ValidationError
 // class ValidationError extends Error {

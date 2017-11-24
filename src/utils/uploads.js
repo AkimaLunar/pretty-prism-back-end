@@ -1,6 +1,6 @@
 import moment from 'moment';
 import AWS from 'aws-sdk';
-import { logger } from '../lib/logger';
+import { logger } from '../utils/logger';
 
 import { ACCESS_KEY_ID, SECRET_ACCESS_KEY, REGION, BUCKET } from '../config';
 

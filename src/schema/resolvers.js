@@ -1,27 +1,18 @@
 import { ObjectId } from 'mongodb';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 import { GraphQLUpload } from 'apollo-upload-server';
 
-import { JWT_SECRET, JWT_EXPIRY } from '../config';
 import {
   assertValidUser,
   assertValidPolishId,
   assertValidOwner,
   assertValidAuthor
 } from './assertions';
-import { logger } from '../lib/logger';
-import { processUpload, DOUpload } from '../lib/uploads';
-
-const hashPassword = password => bcrypt.hash(password, 10);
-const validatePassword = (input, password) => bcrypt.compare(input, password);
-const generateToken = user =>
-  // TODO: Refactor to use just the ID
-  jwt.sign({ user }, JWT_SECRET, {
-    subject: user.username,
-    expiresIn: JWT_EXPIRY,
-    algorithm: 'HS256'
-  });
+import {
+  hashPassword,
+  validatePassword,
+  generateToken
+} from '../utils/authentication';
+import { processUpload, DOUpload } from '../utils/uploads';
 
 export default {
   // COMMENT: QUERIES

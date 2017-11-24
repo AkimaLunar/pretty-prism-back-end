@@ -14,9 +14,9 @@ import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
 import { apolloUploadExpress } from 'apollo-upload-server';
 import schema from './schema';
 import connectMongo from './db';
-import { authenticate } from './authentication';
+import { authenticate } from './utils/authentication';
 
-import { logger } from './lib/logger';
+import { logger } from './utils/logger';
 
 // Express App
 const app = express();
