@@ -103,7 +103,6 @@ export default {
 
     uploadImage: async (root, { upload, size }, { user }) => {
       assertValidUser(user);
-      logger(JSON.stringify(user.username, '', 2));
       const image = await processUpload(upload, size, user.username);
       const spacesEndpoint = new AWS.Endpoint(
         `${REGION}.digitaloceanspaces.com`
