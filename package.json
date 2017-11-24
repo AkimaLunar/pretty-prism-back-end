@@ -29,8 +29,8 @@
   "license": "MIT",
   "dependencies": {
     "apollo-server-express": "^1.0.4",
+    "apollo-upload-server": "^4.0.0-alpha.1",
     "aws-sdk": "^2.155.0",
-    "aws4": "^1.6.0",
     "babel-polyfill": "^6.26.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.13.3",
@@ -43,11 +43,9 @@
     "graphql-subscriptions": "^0.4.3",
     "graphql-tools": "^1.0.0",
     "jsonwebtoken": "^8.1.0",
+    "moment": "^2.19.2",
     "mongodb": "^2.2.29",
     "morgan": "^1.8.0",
-    "passport": "^0.4.0",
-    "passport-http": "^0.3.0",
-    "passport-jwt": "^3.0.1",
     "subscriptions-transport-ws": "^0.7.3"
   },
   "devDependencies": {

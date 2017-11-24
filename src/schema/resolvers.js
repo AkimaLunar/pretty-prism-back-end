@@ -2,12 +2,14 @@ import { ObjectId } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import AWS from 'aws-sdk';
-import aws4 from 'aws4';
+import { GraphQLUpload } from 'apollo-upload-server';
+
 import {
   JWT_SECRET,
   JWT_EXPIRY,
   ACCESS_KEY_ID,
   SECRET_ACCESS_KEY,
+  REGION,
   BUCKET
 } from '../config';
 import {
@@ -17,6 +19,7 @@ import {
   assertValidAuthor
 } from './assertions';
 import { logger } from '../lib/logger';
+import { processUpload } from '../lib/uploads';
 
 const hashPassword = password => bcrypt.hash(password, 10);
 const validatePassword = (input, password) => bcrypt.compare(input, password);
@@ -98,21 +101,32 @@ export default {
       return { id };
     },
 
-    signS3: async (root, { image }) => {
-      const url = `https://${BUCKET}.digitaloceanspaces.com/${image.name}`;
-      const options = {
-        host: `https://${BUCKET}.digitaloceanspaces.com/`,
-        region: 'nyc3',
-        service: 's3',
-        path: image.name
-      };
-      const signature = await aws4.sign(options, {
+    uploadImage: async (root, { upload, size }, { user }) => {
+      assertValidUser(user);
+      logger(JSON.stringify(user.username, '', 2));
+      const image = await processUpload(upload, size, user.username);
+      const spacesEndpoint = new AWS.Endpoint(
+        `${REGION}.digitaloceanspaces.com`
+      );
+      const url = `https://${BUCKET}.${REGION}.digitaloceanspaces.com/${image.path}`;
+      const S3 = new AWS.S3({
+        endpoint: spacesEndpoint,
         accessKeyId: ACCESS_KEY_ID,
         secretAccessKey: SECRET_ACCESS_KEY
       });
-      logger(JSON.stringify(signature, '', 2));
+      const params = { Body: image.stream, Bucket: BUCKET, Key: image.path };
+      await S3.putObject(params)
+        .on('build', request => {
+          request.httpRequest.headers.Host = `https://${BUCKET}.${REGION}.digitaloceanspaces.com`;
+          request.httpRequest.headers['Content-Length'] = size;
+          request.httpRequest.headers['Content-Type'] = image.mimetype;
+          request.httpRequest.headers['x-amz-acl'] = 'public-read';
+        })
+        .send((err, data) => {
+          if (err) logger(err, err.stack);
+          else logger(JSON.stringify(data, '', 2));
+        });
       return {
-        signature,
         url
       };
     },
@@ -229,5 +243,7 @@ export default {
       await Users.findOne({ _id: sender }),
     receiver: async ({ receiver }, data, { mongo: { Users } }) =>
       await Users.findOne({ _id: new ObjectId(receiver) })
-  }
+  },
+
+  Upload: GraphQLUpload
 };

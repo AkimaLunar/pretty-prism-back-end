@@ -1,4 +1,5 @@
 import { makeExecutableSchema } from 'graphql-tools';
+
 import resolvers from './resolvers';
 
 const typeDefs = `
@@ -19,7 +20,7 @@ type Mutation {
     name: String!
   ): Polish
 
-  signS3(image: Image!): S3Payload!
+  uploadImage(upload: Upload!, size: String!): uploadPayload!
 
   updatePolish(
     id: String!,
@@ -67,6 +68,7 @@ type Mutation {
     text: String!
   ): Message
 }
+
 type Polish {
   id: ID!,
   images: [String]!,
@@ -83,15 +85,18 @@ enum Status {
   TRANSFER
 }
 
-type S3Payload {
-  signature: String!,
-  url: String!,
+scalar Upload
+
+type Image {
+  id: ID!
+  path: String!
+  filename: String!
+  mimetype: String!
+  encoding: String!
 }
 
-input Image {
-  name: String!,
-  type: String!,
-  size: String
+type uploadPayload {
+  url: String!
 }
 
 type DeletePolishPayload {

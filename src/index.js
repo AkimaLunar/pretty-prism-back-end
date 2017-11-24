@@ -1,14 +1,17 @@
+// Environment
 import _env from './env'; // eslint-disable-line
 import { PORT } from './config';
-
 import 'babel-polyfill';
 
+// Express
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import morgan from 'morgan';
 
+// GraphQL & DB
 import { graphqlExpress, graphiqlExpress } from 'apollo-server-express';
+import { apolloUploadExpress } from 'apollo-upload-server';
 import schema from './schema';
 import connectMongo from './db';
 import { authenticate } from './authentication';
@@ -42,7 +45,7 @@ const start = async () => {
     res.status(200).json({ message: 'PrettyPrism API' });
   });
   // GraphQL
-  app.use('/graphql', graphqlExpress(buildOptions));
+  app.use('/graphql', apolloUploadExpress(), graphqlExpress(buildOptions));
 
   // Graphiql
   app.use(
