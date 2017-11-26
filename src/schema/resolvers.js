@@ -13,7 +13,7 @@ import {
   generateToken
 } from '../utils/authentication';
 import { processUpload, DOUpload } from '../utils/uploads';
-
+import { logger } from '../utils/logger';
 export default {
   // COMMENT: QUERIES
 
@@ -29,6 +29,11 @@ export default {
 
     polish: async (root, data, { mongo: { Polishes } }) =>
       await Polishes.findOne({ _id: new ObjectId(data.id) }),
+
+    polishesByUser: async (root, data, { mongo: { Polishes } }) =>
+      await Polishes.find({
+        'ownersIds.0': new ObjectId(data.userId)
+      }).toArray(),
 
     comments: async (root, data, { mongo: { Comments } }) =>
       await Comments.find({ polishId: data.polishId }).toArray(),
@@ -98,7 +103,8 @@ export default {
       const newUser = Object.assign({}, data, {
         password: _hash,
         avatar:
-          'https://pretty-prism.nyc3.digitaloceanspaces.com/assets/default_avatar.png'
+          'https://pretty-prism.nyc3.digitaloceanspaces.com/assets/default_avatar.png',
+        following: []
       });
       const response = await Users.insert(newUser);
       const insertedUser = {
@@ -149,7 +155,32 @@ export default {
         };
       }
     },
-
+    startFollow: async (
+      root,
+      { userToFollowId },
+      { mongo: { Users }, user }
+    ) => {
+      assertValidUser(user);
+      const { _id } = user;
+      await Users.update(
+        { _id: new ObjectId(_id) },
+        { $push: { following: userToFollowId } }
+      );
+      return { id: userToFollowId };
+    },
+    stopFollow: async (
+      root,
+      { userToFollowId },
+      { mongo: { Users }, user }
+    ) => {
+      assertValidUser(user);
+      const { _id } = user;
+      await Users.update(
+        { _id: new ObjectId(_id) },
+        { $pull: { following: userToFollowId } }
+      );
+      return { id: userToFollowId };
+    },
     createComment: async (
       root,
       data,
@@ -192,7 +223,13 @@ export default {
   },
   User: {
     id: root => root._id || root.id,
-    password: () => ''
+    password: () => '',
+    polishes: async (root, data, { mongo: { Polishes } }) =>
+      await Polishes.find({
+        'ownersIds.0': root._id
+      }).toArray(),
+    following: async ({ following }, data, { mongo: { Users } }) =>
+      await following.map(id => Users.findOne({ _id: new ObjectId(id) }))
   },
   Comment: {
     id: root => root._id || root.id,

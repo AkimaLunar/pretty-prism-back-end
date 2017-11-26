@@ -9,6 +9,7 @@ type Query {
   userById(id: String!): User
   userByUsername(username: String!): User
   polish(id: String!): Polish
+  polishesByUser(userId: String!): [Polish]!
   comments(polishId: String!): [Comment]!
   messages(receiverId: String!): [Message]!
   chat(receiverId: String!, senderId: String!): [Message]!
@@ -62,6 +63,13 @@ type Mutation {
     id: ID
   ) : DeleteUserPayload
 
+  startFollow(
+    userToFollowId: String!
+  ) : FollowPayload!
+
+  stopFollow(
+    userToFollowId: String!
+  ) : FollowPayload!
 
   createMessage(
     receiver: String!,
@@ -107,7 +115,9 @@ type User {
   id: ID!,
   username: String!,
   password: String!,
-  avatar: String!
+  avatar: String!,
+  polishes: [Polish]!,
+  following: [User]
 }
 
 type DeleteUserPayload {
@@ -119,6 +129,10 @@ type LoginPayload {
   id: String!,
   username: String!,
   avatar: String!
+}
+
+type FollowPayload {
+  id: ID!
 }
 
 type Comment {
