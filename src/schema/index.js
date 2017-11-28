@@ -5,11 +5,12 @@ import resolvers from './resolvers';
 const typeDefs = `
 
 type Query {
-  allPolishes: [Polish!]!
+  polishes(filter:String): [Polish]!
   userById(id: String!): User
   userByUsername(username: String!): User
   polish(id: String!): Polish
   polishesByUser(userId: String!): [Polish]!
+  polishesByFollowing: [Polish]!
   comments(polishId: String!): [Comment]!
   messages(receiverId: String!): [Message]!
   chat(receiverId: String!, senderId: String!): [Message]!

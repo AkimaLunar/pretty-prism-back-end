@@ -13,19 +13,20 @@ import {
   generateToken
 } from '../utils/authentication';
 import { processUpload, DOUpload } from '../utils/uploads';
+import { buildFilters } from '../utils/filters';
 import { logger } from '../utils/logger';
 export default {
   // COMMENT: QUERIES
 
   Query: {
-    allPolishes: async (root, data, { mongo: { Polishes } }) =>
-      await Polishes.find({}).toArray(),
-
     userById: async (root, data, { mongo: { Users } }) =>
       await Users.findOne({ _id: new ObjectId(data.id) }),
 
     userByUsername: async (root, data, { mongo: { Users } }) =>
       await Users.findOne({ username: data.username }),
+
+    polishes: async (root, { filter }, { mongo: { Polishes }, user }) =>
+      await Polishes.find(buildFilters(filter, user)).toArray(),
 
     polish: async (root, data, { mongo: { Polishes } }) =>
       await Polishes.findOne({ _id: new ObjectId(data.id) }),
@@ -33,6 +34,11 @@ export default {
     polishesByUser: async (root, data, { mongo: { Polishes } }) =>
       await Polishes.find({
         'ownersIds.0': new ObjectId(data.userId)
+      }).toArray(),
+
+    polishesByFollowing: async (root, data, { mongo: { Polishes }, user }) =>
+      await Polishes.find({
+        ownersIds: { $in: buildFollowingFilter(user.following) }
       }).toArray(),
 
     comments: async (root, data, { mongo: { Comments } }) =>
