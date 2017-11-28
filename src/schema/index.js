@@ -10,7 +10,6 @@ type Query {
   userByUsername(username: String!): User
   polish(id: String!): Polish
   polishesByUser(userId: String!): [Polish]!
-  polishesByFollowing: [Polish]!
   comments(polishId: String!): [Comment]!
   messages(receiverId: String!): [Message]!
   chat(receiverId: String!, senderId: String!): [Message]!

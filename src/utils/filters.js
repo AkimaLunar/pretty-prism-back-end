@@ -27,7 +27,10 @@ export const buildFilters = (filter, user) => {
     };
   case 'nearby':
     return {};
-
+  case 'your-collection':
+    return {
+      'ownersIds.0': user._id
+    };
   default:
     return {
       ownersIds: { $in: buildFollowingFilter(user.following) }

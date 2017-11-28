@@ -36,11 +36,6 @@ export default {
         'ownersIds.0': new ObjectId(data.userId)
       }).toArray(),
 
-    polishesByFollowing: async (root, data, { mongo: { Polishes }, user }) =>
-      await Polishes.find({
-        ownersIds: { $in: buildFollowingFilter(user.following) }
-      }).toArray(),
-
     comments: async (root, data, { mongo: { Comments } }) =>
       await Comments.find({ polishId: data.polishId }).toArray(),
 
