@@ -7,3 +7,7 @@ export const BUCKET = process.env.BUCKET;
 export const REGION = process.env.REGION;
 export const ACCESS_KEY_ID = process.env.ACCESS_KEY_ID;
 export const SECRET_ACCESS_KEY = process.env.SECRET_ACCESS_KEY;
+export const PATH =
+  process.env.ENV === 'DEV'
+    ? `ws://localhost:${PORT}`
+    : 'ws://api.prettyprism.com';
