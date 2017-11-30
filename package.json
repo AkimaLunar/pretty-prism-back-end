@@ -1,6 +1,6 @@
 {
   "name": "pretty-prism-back-end",
-  "version": "0.1.0",
+  "version": "1.3.2",
   "description": "PrettyPrism: Back end",
   "main": "dist",
   "scripts": {
@@ -39,7 +39,7 @@
     "dataloader": "^1.3.0",
     "dotenv": "^4.0.0",
     "express": "^4.13.3",
-    "graphql": "^0.10.3",
+    "graphql": "0.11.0",
     "graphql-subscriptions": "^0.4.3",
     "graphql-tools": "^1.0.0",
     "jsonwebtoken": "^8.1.0",
