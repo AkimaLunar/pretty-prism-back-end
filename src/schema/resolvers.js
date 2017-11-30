@@ -1,5 +1,7 @@
 import { ObjectId } from 'mongodb';
 import { GraphQLUpload } from 'apollo-upload-server';
+import { withFilter } from 'graphql-subscriptions';
+import { pubsub } from '../subscriptions';
 
 import {
   assertValidUser,
@@ -39,6 +41,7 @@ export default {
     comments: async (root, data, { mongo: { Comments } }) =>
       await Comments.find({ polishId: data.polishId }).toArray(),
 
+    // TODO: Use aggregate here
     messages: async (root, data, { mongo: { Messages } }) =>
       await Messages.find({ receiver: data.receiverId }).toArray(),
 
@@ -206,12 +209,14 @@ export default {
 
     createMessage: async (root, data, { mongo: { Messages }, user }) => {
       assertValidUser(user);
-      const newMessage = Object.assign({}, data, {
+      const _message = Object.assign({}, data, {
         timestamp: Date.now(),
         sender: user._id
       });
-      const response = await Messages.insert(newMessage);
-      return Object.assign({ id: response.insertedIds[0] }, newMessage);
+      const response = await Messages.insert(_message);
+      const payload = Object.assign({ id: response.insertedIds[0] }, _message);
+      pubsub.publish('newMessage', { payload });
+      return payload;
     }
   },
 
@@ -245,5 +250,18 @@ export default {
       await Users.findOne({ _id: new ObjectId(receiver) })
   },
 
-  Upload: GraphQLUpload
+  Upload: GraphQLUpload,
+
+  Subscription: {
+    newMessage: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator('newMessage'),
+        (root, data) => {
+          logger(JSON.stringify(root, '', 2));
+          logger(JSON.stringify(data, '', 2));
+          return root.receiver === data.receiverId;
+        }
+      )
+    }
+  }
 };

@@ -155,6 +155,11 @@ type Message {
   text: String!
 }
 
+type Subscription {
+  newMessage(receiverId: String!): Message
+}
+
+
 `;
 
 export default makeExecutableSchema({ typeDefs, resolvers });
