@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb';
 import { GraphQLUpload } from 'apollo-upload-server';
 import { withFilter } from 'graphql-subscriptions';
 import { pubsub } from '../subscriptions';
+import moment from 'moment';
 
 import {
   assertValidUser,
@@ -209,14 +210,24 @@ export default {
 
     createMessage: async (root, data, { mongo: { Messages }, user }) => {
       assertValidUser(user);
-      const _message = Object.assign({}, data, {
+      const _data = Object.assign(data, {
         timestamp: Date.now(),
         sender: user._id
       });
-      const response = await Messages.insert(_message);
-      const payload = Object.assign({ id: response.insertedIds[0] }, _message);
-      pubsub.publish('newMessage', { payload });
-      return payload;
+      const response = await Messages.insert(_data);
+      const newMessage = Object.assign({ id: response.insertedIds[0] }, _data);
+      logger(JSON.stringify(newMessage, '', 2));
+      pubsub.publish('newMessage', {
+        // TODO: This needs to be refactored to use Message type
+        newMessage: {
+          senderUsername: user.username,
+          senderId: newMessage.sender,
+          receiverId: newMessage.receiver,
+          timestamp: newMessage.timestamp,
+          text: newMessage.text
+        }
+      });
+      return newMessage;
     }
   },
 
@@ -257,9 +268,11 @@ export default {
       subscribe: withFilter(
         () => pubsub.asyncIterator('newMessage'),
         (root, data) => {
-          logger(JSON.stringify(root, '', 2));
-          logger(JSON.stringify(data, '', 2));
-          return root.receiver === data.receiverId;
+          logger(`ROOT:
+          ${JSON.stringify(root, '', 2)}`);
+          logger(`DATA:
+          ${JSON.stringify(data, '', 2)}`);
+          return root.newMessage.receiverId === data.receiverId;
         }
       )
     }

@@ -155,8 +155,16 @@ type Message {
   text: String!
 }
 
+type newMessagePayload {
+  senderUsername: String!,
+  senderId: String!,
+  receiverId: String!,
+  timestamp: String!,
+  text: String
+}
+
 type Subscription {
-  newMessage(receiverId: String!): Message
+  newMessage(receiverId: String!): newMessagePayload
 }
 
 
