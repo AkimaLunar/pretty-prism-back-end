@@ -11,7 +11,7 @@ type Query {
   polish(id: String!): Polish
   polishesByUser(userId: String!): [Polish]!
   comments(polishId: String!): [Comment]!
-  messages(receiverId: String!): [Message]!
+  messages(receiverId: String!): [Chat]!
   chat(receiverId: String!, senderId: String!): [Message]!
 }
 
@@ -155,12 +155,24 @@ type Message {
   text: String!
 }
 
+type MessagePayload {
+  text: String,
+  timestamp: String!
+}
+
 type newMessagePayload {
   senderUsername: String!,
   senderId: String!,
   receiverId: String!,
   timestamp: String!,
   text: String
+}
+
+type Chat {
+  id: ID!,
+  user: User!,
+  count: Int!,
+  messages: [MessagePayload]
 }
 
 type Subscription {

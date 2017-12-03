@@ -43,8 +43,20 @@ export default {
       await Comments.find({ polishId: data.polishId }).toArray(),
 
     // TODO: Use aggregate here
-    messages: async (root, data, { mongo: { Messages } }) =>
-      await Messages.find({ receiver: data.receiverId }).toArray(),
+    messages: async (root, data, { mongo: { Messages } }) => {
+      const chat = await Messages.aggregate([
+        { $match: { receiver: data.receiverId } },
+        {
+          $group: {
+            _id: '$sender',
+            count: { $sum: 1 },
+            messages: { $push: { text: '$text', timestamp: '$timestamp' } }
+          }
+        }
+      ]).toArray();
+      // logger(JSON.stringify(chat, '', 2));
+      return chat;
+    },
 
     chat: async (root, data, { mongo: { Messages } }) =>
       await Messages.find({
@@ -259,6 +271,12 @@ export default {
       await Users.findOne({ _id: sender }),
     receiver: async ({ receiver }, data, { mongo: { Users } }) =>
       await Users.findOne({ _id: new ObjectId(receiver) })
+  },
+
+  Chat: {
+    id: root => root._id || root.id,
+    user: async ({ _id }, data, { mongo: { Users } }) =>
+      await Users.findOne({ _id })
   },
 
   Upload: GraphQLUpload,
