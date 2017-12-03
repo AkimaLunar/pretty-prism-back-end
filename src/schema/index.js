@@ -77,6 +77,8 @@ type Mutation {
   ): Message
 }
 
+scalar Date
+
 type Polish {
   id: ID!,
   images: [String]!,
@@ -139,7 +141,7 @@ type Comment {
   id: ID!,
   polish: Polish!,
   author: User!,
-  timestamp: String!,
+  timestamp: Date!,
   text: String!
 }
 
@@ -151,20 +153,20 @@ type Message {
   id: ID!,
   sender: User!,
   receiver: User!,
-  timestamp: String!,
+  timestamp: Date!,
   text: String!
 }
 
 type MessagePayload {
   text: String,
-  timestamp: String!
+  timestamp: Date!
 }
 
 type newMessagePayload {
   senderUsername: String!,
   senderId: String!,
   receiverId: String!,
-  timestamp: String!,
+  timestamp: Date!,
   text: String
 }
 
