@@ -28,6 +28,9 @@ export const buildFilters = (filter, user) => {
   case 'nearby':
     return {};
   case 'your-collection':
+    if (!user) {
+      return { 'ownersIds.0': null };
+    }
     return {
       'ownersIds.0': user._id
     };

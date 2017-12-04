@@ -44,9 +44,14 @@ export default {
       await Comments.find({ polishId: data.polishId }).toArray(),
 
     // TODO: Use aggregate here
-    messages: async (root, data, { mongo: { Messages } }) => {
+    messages: async (root, data, { mongo: { Messages }, user }) => {
+      logger(`userId: ${user._id}`);
       const chat = await Messages.aggregate([
-        { $match: { receiver: data.receiverId } },
+        {
+          $match: {
+            $or: [{ receiver: data.receiverId }, { sender: user._id }]
+          }
+        },
         {
           $group: {
             _id: '$sender',
