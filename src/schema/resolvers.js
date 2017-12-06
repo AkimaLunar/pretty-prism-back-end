@@ -18,7 +18,8 @@ import {
 } from '../utils/authentication';
 import { processUpload, DOUpload } from '../utils/uploads';
 import { buildFilters } from '../utils/filters';
-import { logger } from '../utils/logger';
+import { findOrCreate } from '../utils/helpers';
+import { logger, loggerJson } from '../utils/logger';
 export default {
   // COMMENT: QUERIES
 
@@ -44,39 +45,41 @@ export default {
       await Comments.find({ polishId: data.polishId }).toArray(),
 
     // TODO: Use aggregate here
-    messages: async (root, data, { mongo: { Messages }, user }) => {
+    messages: async (root, data, { mongo: { Chat }, user }) => {
       logger(`userId: ${user._id}`);
-      const chat = await Messages.aggregate([
+      const chat = await Chat.aggregate([
         {
-          $match: {
-            $or: [{ receiver: data.receiverId }, { sender: user._id }]
-          }
+          $match: { users: { $in: [user.id] } }
         },
         {
           $group: {
-            _id: '$sender',
+            _id: '$_id',
             count: { $sum: 1 },
-            messages: { $push: { text: '$text', timestamp: '$timestamp' } }
+            messages: '$messages'
           }
         }
       ]).toArray();
-      // logger(JSON.stringify(chat, '', 2));
       return chat;
     },
 
-    chat: async (root, data, { mongo: { Messages } }) =>
-      await Messages.find({
-        $or: [
-          {
-            receiver: data.receiverId,
-            sender: new ObjectId(data.senderId)
-          },
-          {
-            receiver: data.senderId,
-            sender: new ObjectId(data.receiverId)
-          }
-        ]
-      }).toArray()
+    chatById: async (root, { id }, { mongo: { Chats } }) =>
+      await Chats.findOne({ _id: new ObjectId(id) }),
+
+    chatByUser: async (root, { receiverId }, { mongo: { Chats }, user }) => {
+      assertValidUser(user);
+      const chat = await Chats.findOne({
+        users: { $all: [receiverId, user._id] }
+      });
+      if (chat) {
+        return chat;
+      }
+      const newChat = {
+        users: [receiverId, user._id],
+        messages: []
+      };
+      const response = await Chats.insert(newChat);
+      return Object.assign({ id: response.insertedIds[0] }, newChat);
+    }
   },
 
   // COMMENT: MUTATIONS
@@ -226,6 +229,16 @@ export default {
       return Object.assign({ id });
     },
 
+    createChat: async (root, { receiverId }, { mongo: { Chats }, user }) => {
+      assertValidUser(user);
+      const newChat = {
+        users: [receiverId, ObjectId(user._id).toString()],
+        messages: []
+      };
+      const response = await Chats.insert(newChat);
+      return Object.assign({ id: response.insertedIds[0], newChat });
+    },
+
     createMessage: async (root, data, { mongo: { Messages }, user }) => {
       assertValidUser(user);
       const _data = Object.assign(data, {
@@ -234,13 +247,9 @@ export default {
       });
       const response = await Messages.insert(_data);
       const newMessage = Object.assign({ id: response.insertedIds[0] }, _data);
-      logger(JSON.stringify(newMessage, '', 2));
       pubsub.publish('newMessage', {
         // TODO: This needs to be refactored to use Message type
         newMessage: {
-          senderUsername: user.username,
-          senderId: newMessage.sender,
-          receiverId: newMessage.receiver,
           timestamp: newMessage.timestamp,
           text: newMessage.text
         }
@@ -287,18 +296,21 @@ export default {
     author: async ({ author }, data, { mongo: { Users } }) =>
       await Users.findOne({ _id: author })
   },
+
+  Chat: {
+    id: root => root._id || root.id,
+    users: async ({ users }, data, { mongo: { Users } }) =>
+      await users.map(id => Users.findOne({ _id: ObjectId(id) })),
+    messages: async ({ id }, data, { mongo: { Messages } }) =>
+      await Messages.find({ chatId: id }).toArray()
+  },
+
   Message: {
     id: root => root._id || root.id,
     sender: async ({ sender }, data, { mongo: { Users } }) =>
       await Users.findOne({ _id: sender }),
-    receiver: async ({ receiver }, data, { mongo: { Users } }) =>
-      await Users.findOne({ _id: new ObjectId(receiver) })
-  },
-
-  Chat: {
-    id: root => root._id || root.id,
-    user: async ({ _id }, data, { mongo: { Users } }) =>
-      await Users.findOne({ _id })
+    chat: async ({ chatId }, data, { mongo: { Chats } }) =>
+      await Chats.findOne({ _id: new ObjectId(chatId) })
   },
 
   Upload: GraphQLUpload,

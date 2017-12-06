@@ -7,6 +7,7 @@ export default async () => {
     Polishes: db.collection('polishes'),
     Users: db.collection('users'),
     Comments: db.collection('comments'),
+    Chats: db.collection('chats'),
     Messages: db.collection('messages')
   };
 };

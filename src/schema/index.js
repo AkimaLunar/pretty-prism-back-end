@@ -11,8 +11,9 @@ type Query {
   polish(id: String!): Polish
   polishesByUser(userId: String!): [Polish]!
   comments(polishId: String!): [Comment]!
-  messages(receiverId: String!): [Chat]!
-  chat(receiverId: String!, senderId: String!): [Message]!
+  messages(chatId: String!): [Chat]!
+  chatById(id: String!): Chat!
+  chatByUser(receiverId: String!): Chat!
 }
 
 type Mutation {
@@ -70,6 +71,10 @@ type Mutation {
   stopFollow(
     userToFollowId: String!
   ) : FollowPayload!
+
+  createChat(
+    receiverId: String!
+  ): Chat!
 
   createMessage(
     receiver: String!,
@@ -151,10 +156,16 @@ type DeleteCommentPayload {
 
 type Message {
   id: ID!,
+  chat: Chat!,
   sender: User!,
-  receiver: User!,
   timestamp: Date!,
   text: String!
+}
+
+type Chat {
+  id: ID!,
+  messages: [Message]!,
+  users: [User]!
 }
 
 type MessagePayload {
@@ -162,23 +173,8 @@ type MessagePayload {
   timestamp: Date!
 }
 
-type newMessagePayload {
-  senderUsername: String!,
-  senderId: String!,
-  receiverId: String!,
-  timestamp: Date!,
-  text: String
-}
-
-type Chat {
-  id: ID!,
-  user: User!,
-  count: Int!,
-  messages: [MessagePayload]
-}
-
 type Subscription {
-  newMessage(receiverId: String!): newMessagePayload
+  newMessage(receiverId: String!): MessagePayload
 }
 
 
