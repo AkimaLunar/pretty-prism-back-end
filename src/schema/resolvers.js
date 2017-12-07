@@ -44,38 +44,23 @@ export default {
     comments: async (root, data, { mongo: { Comments } }) =>
       await Comments.find({ polishId: data.polishId }).toArray(),
 
-    // TODO: Use aggregate here
-    messages: async (root, data, { mongo: { Chat }, user }) => {
-      logger(`userId: ${user._id}`);
-      const chat = await Chat.aggregate([
-        {
-          $match: { users: { $in: [user.id] } }
-        },
-        {
-          $group: {
-            _id: '$_id',
-            count: { $sum: 1 },
-            messages: '$messages'
-          }
-        }
-      ]).toArray();
-      return chat;
-    },
-
     chatById: async (root, { id }, { mongo: { Chats } }) =>
       await Chats.findOne({ _id: new ObjectId(id) }),
 
     chatByUser: async (root, { receiverId }, { mongo: { Chats }, user }) => {
-      assertValidUser(user);
+      if (!user) {
+        return null;
+      }
       const chat = await Chats.findOne({
-        users: { $all: [receiverId, user._id] }
+        users: {
+          $all: [new ObjectId(receiverId), user._id]
+        }
       });
       if (chat) {
         return chat;
       }
       const newChat = {
-        users: [receiverId, user._id],
-        messages: []
+        users: [new ObjectId(receiverId), user._id]
       };
       const response = await Chats.insert(newChat);
       return Object.assign({ id: response.insertedIds[0] }, newChat);
@@ -232,8 +217,7 @@ export default {
     createChat: async (root, { receiverId }, { mongo: { Chats }, user }) => {
       assertValidUser(user);
       const newChat = {
-        users: [receiverId, ObjectId(user._id).toString()],
-        messages: []
+        users: [new ObjectId(receiverId), user._id]
       };
       const response = await Chats.insert(newChat);
       return Object.assign({ id: response.insertedIds[0], newChat });
@@ -289,7 +273,9 @@ export default {
         'ownersIds.0': root._id
       }).toArray(),
     following: async ({ following }, data, { mongo: { Users } }) =>
-      await following.map(id => Users.findOne({ _id: new ObjectId(id) }))
+      await following.map(id => Users.findOne({ _id: new ObjectId(id) })),
+    chats: async ({ _id }, data, { mongo: { Chats } }) =>
+      await Chats.find({ users: { $in: [_id] } }).toArray()
   },
   Comment: {
     id: root => root._id || root.id,
@@ -301,8 +287,10 @@ export default {
     id: root => root._id || root.id,
     users: async ({ users }, data, { mongo: { Users } }) =>
       await users.map(id => Users.findOne({ _id: ObjectId(id) })),
-    messages: async ({ id }, data, { mongo: { Messages } }) =>
-      await Messages.find({ chatId: id }).toArray()
+    messages: async ({ _id }, data, { mongo: { Messages } }) =>
+      await Messages.find({
+        chatId: _id.toString()
+      }).toArray()
   },
 
   Message: {

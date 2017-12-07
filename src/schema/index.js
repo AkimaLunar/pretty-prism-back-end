@@ -11,9 +11,8 @@ type Query {
   polish(id: String!): Polish
   polishesByUser(userId: String!): [Polish]!
   comments(polishId: String!): [Comment]!
-  messages(chatId: String!): [Chat]!
   chatById(id: String!): Chat!
-  chatByUser(receiverId: String!): Chat!
+  chatByUser(receiverId: String!): Chat
 }
 
 type Mutation {
@@ -77,7 +76,7 @@ type Mutation {
   ): Chat!
 
   createMessage(
-    receiver: String!,
+    chatId: String!,
     text: String!
   ): Message
 }
@@ -124,7 +123,8 @@ type User {
   password: String!,
   avatar: String!,
   polishes: [Polish]!,
-  following: [User]
+  following: [User],
+  chats: [Chat]!
 }
 
 type DeleteUserPayload {
