@@ -52,8 +52,8 @@ const start = async () => {
     '/playground',
     graphiqlExpress({
       endpointURL: '/graphql',
-      passHeader:
-        '"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNWExYTMzNGE5MmU3YWQyMTc4MGQ1NGQ4IiwidXNlcm5hbWUiOiJ0aWdlcmtpdHR5IiwiYXZhdGFyIjoiaHR0cHM6Ly9wcmV0dHktcHJpc20ubnljMy5kaWdpdGFsb2NlYW5zcGFjZXMuY29tL2Fzc2V0cy9kZWZhdWx0X2F2YXRhci5wbmcifSwiaWF0IjoxNTEyMDYyMTQ5LCJleHAiOjE1MTI2NjY5NDksInN1YiI6InRpZ2Vya2l0dHkifQ.eqwB4VvXt1nipbefYrbRZHA7hgfPUr3TheUrAfBtaJY"',
+      // passHeader:
+      //   '"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoiNWExYTMzNGE5MmU3YWQyMTc4MGQ1NGQ4IiwidXNlcm5hbWUiOiJ0aWdlcmtpdHR5IiwiYXZhdGFyIjoiaHR0cHM6Ly9wcmV0dHktcHJpc20ubnljMy5kaWdpdGFsb2NlYW5zcGFjZXMuY29tL2Fzc2V0cy9kZWZhdWx0X2F2YXRhci5wbmcifSwiaWF0IjoxNTEyMDYyMTQ5LCJleHAiOjE1MTI2NjY5NDksInN1YiI6InRpZ2Vya2l0dHkifQ.eqwB4VvXt1nipbefYrbRZHA7hgfPUr3TheUrAfBtaJY"',
       subscriptionsEndpoint: `${PATH}/subscriptions`
     })
   );
