@@ -1,6 +1,6 @@
 // Environment
 import _env from './env'; // eslint-disable-line
-import { PORT, PATH } from './config';
+import { PORT, WSPORT, PATH } from './config';
 import 'babel-polyfill';
 
 // Express
@@ -58,11 +58,11 @@ const start = async () => {
     })
   );
   const server = createServer(app);
-  server.listen(PORT, error => {
+  server.listen(WSPORT, (error) => {
     if (error) {
-      throw new Error(error);
+      throw new Error(error)
     }
-    new SubscriptionServer(
+    SubscriptionServer.create(
       { execute, subscribe, schema },
       { server, path: '/subscriptions' }
     );
