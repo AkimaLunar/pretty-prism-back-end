@@ -58,8 +58,11 @@ const start = async () => {
     })
   );
   const server = createServer(app);
-  server.listen(PORT, () => {
-    SubscriptionServer.create(
+  server.listen(PORT, error => {
+    if (error) {
+      throw new Error(error);
+    }
+    new SubscriptionServer(
       { execute, subscribe, schema },
       { server, path: '/subscriptions' }
     );
