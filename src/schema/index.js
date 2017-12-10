@@ -170,11 +170,12 @@ type Chat {
 
 type MessagePayload {
   text: String,
-  timestamp: Date!
+  message: Date!
 }
 
 type Subscription {
-  newMessage(receiverId: String!): MessagePayload
+  newMessage(receiverId: String!): MessagePayload,
+  chat(chatId: String!): Message
 }
 
 

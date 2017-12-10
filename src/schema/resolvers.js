@@ -231,13 +231,8 @@ export default {
       });
       const response = await Messages.insert(_data);
       const newMessage = Object.assign({ id: response.insertedIds[0] }, _data);
-      pubsub.publish('newMessage', {
-        // TODO: This needs to be refactored to use Message type
-        newMessage: {
-          timestamp: newMessage.timestamp,
-          text: newMessage.text
-        }
-      });
+      loggerJson('newMessage', newMessage);
+      pubsub.publish('chat', { chat: newMessage });
       return newMessage;
     }
   },
@@ -304,17 +299,18 @@ export default {
   Upload: GraphQLUpload,
 
   Subscription: {
-    newMessage: {
+    chat: {
       subscribe: withFilter(
-        () => pubsub.asyncIterator('newMessage'),
+        () => pubsub.asyncIterator('chat'),
         (root, data) => {
-          logger(`ROOT:
-          ${JSON.stringify(root, '', 2)}`);
-          logger(`DATA:
-          ${JSON.stringify(data, '', 2)}`);
-          return root.newMessage.receiverId === data.receiverId;
+          loggerJson('ROOT', root);
+          loggerJson('DATA', data);
+          return root.chat.chatId === data.chatId;
         }
       )
+    },
+    newMessage: {
+      subscribe: () => pubsub.asyncIterator('newMessage')
     }
   }
 };
